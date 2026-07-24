@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.37502.11 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenCVDemo", "OpenCVDemo\OpenCVDemo.csproj", "{2CAB0C1D-A9E9-4415-9D15-FB7145D97E96}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserControlsWPF", "..\..\UserControlsWPF\UserControlsWPF\UserControlsWPF.csproj", "{77085C05-541F-0455-CFB1-DA7991A931E7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{2CAB0C1D-A9E9-4415-9D15-FB7145D97E96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2CAB0C1D-A9E9-4415-9D15-FB7145D97E96}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2CAB0C1D-A9E9-4415-9D15-FB7145D97E96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77085C05-541F-0455-CFB1-DA7991A931E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77085C05-541F-0455-CFB1-DA7991A931E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77085C05-541F-0455-CFB1-DA7991A931E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77085C05-541F-0455-CFB1-DA7991A931E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

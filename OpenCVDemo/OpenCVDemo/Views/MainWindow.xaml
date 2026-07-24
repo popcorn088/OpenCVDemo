@@ -5,6 +5,13 @@
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="{Binding Title}" Height="350" Width="525" >
     <Grid>
-        <ContentControl prism:RegionManager.RegionName="ContentRegion" />
+        <DockPanel LastChildFill="True">
+            <Menu DockPanel.Dock="Top" VerticalAlignment="Top">
+                <MenuItem Header="File">
+                    <MenuItem Header="Open" Command="{Binding FileOpenCommand}"/>
+                </MenuItem>
+            </Menu>
+            <ContentControl prism:RegionManager.RegionName="ContentRegion" />
+        </DockPanel>
     </Grid>
 </Window>
