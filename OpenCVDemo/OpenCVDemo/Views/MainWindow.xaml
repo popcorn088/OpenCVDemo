@@ -10,6 +10,15 @@
                 <MenuItem Header="File">
                     <MenuItem Header="Open" Command="{Binding FileOpenCommand}"/>
                 </MenuItem>
+                <MenuItem Header="元に戻す" Command="{Binding UndoCommand}" IsEnabled="{Binding IsLastMatEnabled}"/>
+                <MenuItem Header="色">
+                    <MenuItem Header="Negative" Command="{Binding NegativeCommand}" IsEnabled="{Binding IsEnabled, Mode=OneWay}"/>
+                    <MenuItem Header="Grayscale" Command="{Binding GrayscaleCommand}" IsEnabled="{Binding IsEnabled}"/>
+                </MenuItem>
+                <MenuItem Header="階調">
+                    <MenuItem Header="輝度平滑化" Command="{Binding EqualizedCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="閾値処理" Command="{Binding ThresholdCommand}" IsEnabled="{Binding IsEnabled}"/>
+                </MenuItem>
             </Menu>
             <ContentControl prism:RegionManager.RegionName="ContentRegion" />
         </DockPanel>
