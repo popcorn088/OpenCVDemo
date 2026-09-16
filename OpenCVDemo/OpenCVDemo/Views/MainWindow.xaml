@@ -19,6 +19,17 @@
                     <MenuItem Header="輝度平滑化" Command="{Binding EqualizedCommand}" IsEnabled="{Binding IsEnabled}"/>
                     <MenuItem Header="閾値処理" Command="{Binding ThresholdCommand}" IsEnabled="{Binding IsEnabled}"/>
                 </MenuItem>
+                <MenuItem Header="描画">
+                    <MenuItem Header="Lines" Command="{Binding LinesCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="Circles" Command="{Binding CirclesCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="Rectangle" Command="{Binding RectangleCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="Ellipse" Command="{Binding EllipseCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="String" Command="{Binding StringCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="Polylines" Command="{Binding PolylinesCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="Polylines2" Command="{Binding Polylines2Command}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="FillPoly" Command="{Binding FillPolyCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="FillPoly2" Command="{Binding FillPoly2Command}" IsEnabled="{Binding IsEnabled}"/>
+                </MenuItem>
             </Menu>
             <ContentControl prism:RegionManager.RegionName="ContentRegion" />
         </DockPanel>
