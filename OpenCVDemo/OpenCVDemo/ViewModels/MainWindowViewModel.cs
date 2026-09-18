@@ -40,7 +40,15 @@ namespace OpenCVDemo.ViewModels
         public DelegateCommand Polylines2Command { get; }
         public DelegateCommand FillPolyCommand { get; }
         public DelegateCommand FillPoly2Command { get; }
-
+        public DelegateCommand BlurCommand { get; }
+        public DelegateCommand GaussianBlurCommand { get; }
+        public DelegateCommand LaplacianCommand { get; }
+        public DelegateCommand SobelCommand { get; }
+        public DelegateCommand CannyCommand { get; }
+        public DelegateCommand DilateCommand { get; }
+        public DelegateCommand ErodeCommand { get; }
+        public DelegateCommand GammaCommand { get; }
+        public DelegateCommand HistgramCommand { get; }
         public MainWindowViewModel(IRegionManager regionManager, IOpenFileService openFileService, IImageService imageService)
         {
             _regionManager = regionManager;
@@ -67,7 +75,125 @@ namespace OpenCVDemo.ViewModels
             FillPolyCommand = new DelegateCommand(FillPolyCommandExecute);
             FillPoly2Command = new DelegateCommand(FillPoly2CommandExecute);
 
+            // 4章
+            BlurCommand = new DelegateCommand(BlurCommandExecute);
+            GaussianBlurCommand = new DelegateCommand(GaussianBlurCommandExecute);
+            LaplacianCommand = new DelegateCommand(LaplacianCommandExecute);
+            SobelCommand = new DelegateCommand(SobelCommandExecute);
+            CannyCommand = new DelegateCommand(CannyCommandExecute);
+            DilateCommand = new DelegateCommand(DilateCommandExecute);
+            ErodeCommand = new DelegateCommand(ErodeCommandExecute);
+            GammaCommand = new DelegateCommand(GammaCommandExecute);
+            HistgramCommand = new DelegateCommand(HistgramCommandExecute);
+
             _regionManager.RegisterViewWithRegion("ContentRegion", nameof(Image));
+        }
+
+        private void HistgramCommandExecute()
+        {
+            var oMat = new Mat(400, 256 * 2, MatType.CV_8UC3, Scalar.White);
+            var histgrams = new Mat[3];
+            var colors = new Scalar[]
+            {
+                Scalar.Blue,
+                Scalar.Green,
+                Scalar.Red
+            };
+            int[] hdims = { 256 };
+            Rangef[] ranges = { new Rangef(0, 256), };
+            for (int ch = 0; ch < histgrams.Length; ch++)
+            {
+                histgrams[ch] = new Mat();
+                Cv2.CalcHist(new Mat[] { _imageService.Mat }, new int[] { ch }, null, histgrams[ch], 1, hdims, ranges);
+                Cv2.Normalize(histgrams[ch], histgrams[ch], 0, _imageService.Mat.Height, NormTypes.MinMax);
+
+                DrawHistgram(oMat, histgrams[ch], colors[ch]);
+            }
+            Cv2.ImShow("ヒストグラム", oMat);
+        }
+
+        private void DrawHistgram(Mat histMat, Mat hist, Scalar color)
+        {
+            List<List<Point>> lLPoint = new List<List<Point>>();
+            List<Point> lPoint = new List<Point>();
+            for (int i = 0; i < 256; i++)
+            {
+                float v = hist.At<float>(i, 0);
+                var bin = histMat.Width / 256;
+                lPoint.Add(new Point(i * bin, histMat.Height - v - 1));
+            }
+            lLPoint.Add(lPoint);
+            histMat.Polylines(lLPoint, false, color);
+        }
+
+        private void GammaCommandExecute()
+        {
+            var gamma = 2.0;
+            var lutMat = new Mat(1, 256, MatType.CV_8UC1);
+            var lut = new sbyte[256];
+            for (int i = 0; i < lut.Length; i++)
+            {
+                lut[i] = (sbyte)(Math.Pow(i / 255.0, 1.0 / gamma) * 255.0);
+            }
+            for (int i = 0; i < lut.Length; i++)
+            {
+                lutMat.Set(0, i, unchecked((sbyte)lut[i]));
+            }
+            var oMat = new Mat();
+            Cv2.LUT(_imageService.Mat, lutMat, oMat);
+            _imageService.Mat = oMat;
+        }
+
+        private void ErodeCommandExecute()
+        {
+            var oMat = new Mat();
+            Cv2.Erode(_imageService.Mat, oMat, new Mat());
+            _imageService.Mat = oMat;
+        }
+
+        private void DilateCommandExecute()
+        {
+            var oMat = new Mat();
+            Cv2.Dilate(_imageService.Mat, oMat, new Mat());
+            _imageService.Mat = oMat;
+        }
+
+        private void CannyCommandExecute()
+        {
+            var oMat = new Mat();
+            Cv2.CvtColor(_imageService.Mat, oMat, ColorConversionCodes.BGR2GRAY);
+            Cv2.Canny(oMat, oMat, 40.0, 150.0);
+            _imageService.Mat = oMat;
+        }
+
+        private void SobelCommandExecute()
+        {
+            var oMat = new Mat();
+            Cv2.CvtColor(_imageService.Mat, oMat, ColorConversionCodes.BGR2GRAY);
+            Cv2.Sobel(oMat, oMat, -1, 0, 1);
+            _imageService.Mat = oMat;
+        }
+
+        private void LaplacianCommandExecute()
+        {
+            var oMat = new Mat();
+            Cv2.CvtColor(_imageService.Mat, oMat, ColorConversionCodes.BGR2GRAY);
+            Cv2.Laplacian(oMat, oMat, 0);
+            _imageService.Mat = oMat;
+        }
+
+        private void GaussianBlurCommandExecute()
+        {
+            var oMat = new Mat();
+            Cv2.GaussianBlur(_imageService.Mat, oMat, new Size(5, 5), 10.0);
+            _imageService.Mat = oMat;
+        }
+
+        private void BlurCommandExecute()
+        {
+            var oMat = new Mat();
+            Cv2.Blur(_imageService.Mat, oMat, new Size(5, 5));
+            _imageService.Mat = oMat;
         }
 
         private void FillPoly2CommandExecute()

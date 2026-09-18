@@ -30,6 +30,17 @@
                     <MenuItem Header="FillPoly" Command="{Binding FillPolyCommand}" IsEnabled="{Binding IsEnabled}"/>
                     <MenuItem Header="FillPoly2" Command="{Binding FillPoly2Command}" IsEnabled="{Binding IsEnabled}"/>
                 </MenuItem>
+                <MenuItem Header="フィルタ">
+                    <MenuItem Header="Blur" Command="{Binding BlurCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="GaussianBlur" Command="{Binding GaussianBlurCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="Laplacian" Command="{Binding LaplacianCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="Sobel" Command="{Binding SobelCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="Canny" Command="{Binding CannyCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="Dilate" Command="{Binding DilateCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="Erode" Command="{Binding ErodeCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="Gamma" Command="{Binding GammaCommand}" IsEnabled="{Binding IsEnabled}"/>
+                </MenuItem>
+                <MenuItem Header="ヒストグラム" Command="{Binding HistgramCommand}" IsEnabled="{Binding IsEnabled}"/>
             </Menu>
             <ContentControl prism:RegionManager.RegionName="ContentRegion" />
         </DockPanel>
