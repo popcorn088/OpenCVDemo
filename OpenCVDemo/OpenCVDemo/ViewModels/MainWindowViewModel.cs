@@ -8,6 +8,7 @@ using Prism.Regions;
 using OpenCVDemo.Views;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace OpenCVDemo.ViewModels
 {
@@ -24,6 +25,18 @@ namespace OpenCVDemo.ViewModels
         public bool IsLastMatEnabled
         {
             get => _imageService.LastMat is not null;
+        }
+        private double _contentWidth;
+        public double ContentWidth
+        {
+            get => _contentWidth;
+            set => SetProperty(ref _contentWidth, value);
+        }
+        private double _contentHeight;
+        public double ContentHeight
+        {
+            get => _contentHeight;
+            set => SetProperty(ref _contentHeight, value);
         }
         public DelegateCommand FileOpenCommand { get; }
         public DelegateCommand UndoCommand { get; }
@@ -49,6 +62,18 @@ namespace OpenCVDemo.ViewModels
         public DelegateCommand ErodeCommand { get; }
         public DelegateCommand GammaCommand { get; }
         public DelegateCommand HistgramCommand { get; }
+        public DelegateCommand VerticalFlipCommand { get; }
+        public DelegateCommand HorizontalFlipCommand { get; }
+        public DelegateCommand VerticalAndHorizontalFlipCommand { get; }
+        public DelegateCommand Resize5Command { get; }
+        public DelegateCommand Resize8Command { get; }
+        public DelegateCommand Resize12Command { get; }
+        public DelegateCommand Rotation333Command { get; }
+        public DelegateCommand Rotation1235Command { get; }
+        public DelegateCommand Rotation2901Command { get; }
+        public DelegateCommand Perspective1Command { get; }
+        public DelegateCommand Perspective2Command { get; }
+        public DelegateCommand Perspective3Command { get; }
         public MainWindowViewModel(IRegionManager regionManager, IOpenFileService openFileService, IImageService imageService)
         {
             _regionManager = regionManager;
@@ -86,7 +111,195 @@ namespace OpenCVDemo.ViewModels
             GammaCommand = new DelegateCommand(GammaCommandExecute);
             HistgramCommand = new DelegateCommand(HistgramCommandExecute);
 
+            // 5章
+            VerticalFlipCommand = new DelegateCommand(VerticalFlipCommandExecute);
+            HorizontalFlipCommand = new DelegateCommand(HorizontalFlipCommandExecute);
+            VerticalAndHorizontalFlipCommand = new DelegateCommand(VerticalAndHorizontalFlipCommandExecute);
+            Resize5Command = new DelegateCommand(Resize5CommandExecute);
+            Resize8Command = new DelegateCommand(Resize8CommandExecute);
+            Resize12Command = new DelegateCommand(Resize12CommandExecute);
+            Rotation333Command = new DelegateCommand(Rotation333CommandExecute);
+            Rotation1235Command = new DelegateCommand(Rotation1235CommandExecute);
+            Rotation2901Command = new DelegateCommand(Rotation2901CommandExecute);
+            Perspective1Command = new DelegateCommand(Perspective1CommandExecute);
+            Perspective2Command = new DelegateCommand(Perspective2CommandExecute);
+            Perspective3Command = new DelegateCommand(Perspective3CommandExecute);
+
             _regionManager.RegisterViewWithRegion("ContentRegion", nameof(Image));
+        }
+
+        private void Perspective3CommandExecute()
+        {
+            var oMat = new Mat();
+
+            var common = PerspectiveCommon();
+            var x0 = common.Item1;
+            var x1 = common.Item2;
+            var y0 = common.Item3;
+            var y1 = common.Item4;
+
+            var xMergin = common.Item5;
+            var yMergin = common.Item6;
+
+            var srcPoints = common.Item7;
+            Point2f[] dstPoints = new Point2f[4];
+
+            dstPoints[0] = srcPoints[0];
+            dstPoints[1] = new Point2f(x0 + xMergin, y1 - yMergin);
+            dstPoints[2] = srcPoints[2];
+            dstPoints[3] = new Point2f(x1 - xMergin, y0 + yMergin); 
+
+            Mat perspectiveMmat = Cv2.GetPerspectiveTransform(srcPoints, dstPoints);
+            Cv2.WarpPerspective(_imageService.Mat, oMat, perspectiveMmat, _imageService.Mat.Size(), InterpolationFlags.Cubic);
+            _imageService.Mat = oMat;
+        }
+
+        private void Perspective2CommandExecute()
+        {
+            var oMat = new Mat();
+
+            var common = PerspectiveCommon();
+            var x0 = common.Item1;
+            var x1 = common.Item2;
+            var y0 = common.Item3;
+            var y1 = common.Item4;
+
+            var xMergin = common.Item5;
+            var yMergin = common.Item6;
+
+            var srcPoints = common.Item7;
+            Point2f[] dstPoints = new Point2f[4];
+
+            dstPoints[0] = srcPoints[0];
+            dstPoints[1] = new Point2f(x0 + xMergin, y1 - yMergin);
+            dstPoints[2] = new Point2f(x1 - xMergin, y1 - yMergin);
+            dstPoints[3] = srcPoints[3];
+
+            Mat perspectiveMmat = Cv2.GetPerspectiveTransform(srcPoints, dstPoints);
+            Cv2.WarpPerspective(_imageService.Mat, oMat, perspectiveMmat, _imageService.Mat.Size(), InterpolationFlags.Cubic);
+            _imageService.Mat = oMat;
+        }
+
+        private void Perspective1CommandExecute()
+        {
+            var oMat = new Mat();
+
+            var common = PerspectiveCommon();
+            var x0 = common.Item1;
+            var x1 = common.Item2;
+            var y0 = common.Item3;
+            var y1 = common.Item4;
+
+            var xMergin = common.Item5;
+            var yMergin = common.Item6;
+
+            var srcPoints = common.Item7;
+            Point2f[] dstPoints = new Point2f[4];
+
+            dstPoints[0] = new Point2f(x0 + xMergin, y0 + yMergin);
+            dstPoints[1] = srcPoints[1];
+            dstPoints[2] = srcPoints[2];
+            dstPoints[3] = new Point2f(x1 - xMergin, y0 + yMergin);
+
+            Mat perspectiveMmat = Cv2.GetPerspectiveTransform(srcPoints, dstPoints);
+            Cv2.WarpPerspective(_imageService.Mat, oMat, perspectiveMmat, _imageService.Mat.Size(), InterpolationFlags.Cubic);
+            _imageService.Mat = oMat;
+        }
+
+        Tuple<float, float, float, float, int, int, Point2f[]> PerspectiveCommon()
+        {
+            var x0 = (float)(_imageService.Mat.Cols / 4);
+            var x1 = (float)((_imageService.Mat.Cols / 4) * 3);
+            var y0 = (float)(_imageService.Mat.Rows / 4);
+            var y1 = (float)((_imageService.Mat.Rows / 4) * 3);
+
+            var xMergin = _imageService.Mat.Cols / 10;
+            var yMergin = _imageService.Mat.Rows / 10;
+
+            Point2f[] srcPoints = new Point2f[]
+            {
+                new Point2f(x0, y0),
+                new Point2f(x0, y1),
+                new Point2f(x1, y1),
+                new Point2f(x1, y0),
+            };
+
+            return new Tuple<float, float, float, float, int, int, Point2f[]>(x0, x1, y0, y1, xMergin, yMergin, srcPoints);
+        }
+
+        private void Rotation2901CommandExecute()
+        {
+            var oMat = new Mat();
+            var center = new Point2f(_imageService.Mat.Cols / 2, _imageService.Mat.Rows / 2);
+            var affinieTrans = Cv2.GetRotationMatrix2D(center, 290.1, 1.0);
+            Cv2.WarpAffine(_imageService.Mat, oMat, affinieTrans, _imageService.Mat.Size(), InterpolationFlags.Cubic);
+            _imageService.Mat = oMat;
+        }
+
+        private void Rotation1235CommandExecute()
+        {
+            var oMat = new Mat();
+            var center = new Point2f(_imageService.Mat.Cols / 2, _imageService.Mat.Rows / 2);
+            var affinieTrans = Cv2.GetRotationMatrix2D(center, 123.5, 1.0);
+            Cv2.WarpAffine(_imageService.Mat, oMat, affinieTrans, _imageService.Mat.Size(), InterpolationFlags.Cubic);
+            _imageService.Mat = oMat;
+        }
+
+        private void Rotation333CommandExecute()
+        {
+            var oMat = new Mat();
+            var center = new Point2f(_imageService.Mat.Cols / 2, _imageService.Mat.Rows / 2);
+            var affinieTrans = Cv2.GetRotationMatrix2D(center, 33.3, 1.0);
+            Cv2.WarpAffine(_imageService.Mat, oMat, affinieTrans, _imageService.Mat.Size(), InterpolationFlags.Cubic);
+            _imageService.Mat = oMat;
+        }
+
+        private void Resize12CommandExecute()
+        {
+            var oMat = new Mat();
+            Cv2.Resize(_imageService.Mat, oMat, new Size(), 1.2, 1.2);
+            _imageService.Mat = oMat;
+            ContentWidth = _imageService.Mat.Width;
+            ContentHeight = _imageService.Mat.Height;
+        }
+
+        private void Resize8CommandExecute()
+        {
+            var oMat = new Mat();
+            Cv2.Resize(_imageService.Mat, oMat, new Size(), 0.8, 0.8);
+            _imageService.Mat = oMat;
+            ContentWidth = _imageService.Mat.Width;
+            ContentHeight = _imageService.Mat.Height;
+        }
+
+        private void Resize5CommandExecute()
+        {
+            var oMat = new Mat();
+            Cv2.Resize(_imageService.Mat, oMat, new Size(), 0.5, 0.5);
+            _imageService.Mat = oMat;
+            ContentWidth = _imageService.Mat.Width;
+            ContentHeight = _imageService.Mat.Height;
+        }
+
+        private void VerticalAndHorizontalFlipCommandExecute()
+        {
+            var oMat = new Mat();
+            Cv2.Flip(_imageService.Mat, oMat, FlipMode.XY);
+            _imageService.Mat = oMat;
+        }
+
+        private void HorizontalFlipCommandExecute()
+        {
+            var oMat = new Mat();
+            Cv2.Flip(_imageService.Mat, oMat, FlipMode.Y);
+            _imageService.Mat = oMat;
+        }
+
+        private void VerticalFlipCommandExecute()
+        {
+            var oMat = new Mat();
+            Cv2.Flip(_imageService.Mat, oMat, FlipMode.X);
+            _imageService.Mat = oMat;
         }
 
         private void HistgramCommandExecute()
@@ -402,6 +615,8 @@ namespace OpenCVDemo.ViewModels
             }
 
             _imageService.Mat = new Mat(_openFileService.FileName);
+            ContentWidth = _imageService.Mat.Width;
+            ContentHeight = _imageService.Mat.Height;
         }
     }
 }

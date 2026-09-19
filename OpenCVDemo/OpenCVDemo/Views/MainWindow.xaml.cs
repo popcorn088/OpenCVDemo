@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using OpenCVDemo.ViewModels;
+using System;
+using System.Windows;
 
 namespace OpenCVDemo.Views
 {

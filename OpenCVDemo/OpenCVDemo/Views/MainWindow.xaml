@@ -2,8 +2,10 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         prism:ViewModelLocator.AutoWireViewModel="True"
-        Title="{Binding Title}" Height="350" Width="525" >
+        Title="{Binding Title}" Height="350" Width="525">
+    
     <Grid>
         <DockPanel LastChildFill="True">
             <Menu DockPanel.Dock="Top" VerticalAlignment="Top">
@@ -41,8 +43,33 @@
                     <MenuItem Header="Gamma" Command="{Binding GammaCommand}" IsEnabled="{Binding IsEnabled}"/>
                 </MenuItem>
                 <MenuItem Header="ヒストグラム" Command="{Binding HistgramCommand}" IsEnabled="{Binding IsEnabled}"/>
+                <MenuItem Header="アフィン変換">
+                    <MenuItem Header="フリップ">
+                        <MenuItem Header="上下反転" Command="{Binding VerticalFlipCommand}" IsEnabled="{Binding IsEnabled}"/>
+                        <MenuItem Header="左右反転" Command="{Binding HorizontalFlipCommand}" IsEnabled="{Binding IsEnabled}"/>
+                        <MenuItem Header="両軸反転" Command="{Binding VerticalAndHorizontalFlipCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    </MenuItem>
+                    <MenuItem Header="リサイズ">
+                        <MenuItem Header="0.5倍" Command="{Binding Resize5Command}" IsEnabled="{Binding IsEnabled}"/>
+                        <MenuItem Header="0.8倍" Command="{Binding Resize8Command}" IsEnabled="{Binding IsEnabled}"/>
+                        <MenuItem Header="1.2倍" Command="{Binding Resize12Command}" IsEnabled="{Binding IsEnabled}"/>
+                    </MenuItem>
+                    <MenuItem Header="回転">
+                        <MenuItem Header="33.3" Command="{Binding Rotation333Command}" IsEnabled="{Binding IsEnabled}"/>
+                        <MenuItem Header="123.5" Command="{Binding Rotation1235Command}" IsEnabled="{Binding IsEnabled}"/>
+                        <MenuItem Header="290.1" Command="{Binding Rotation2901Command}" IsEnabled="{Binding IsEnabled}"/>
+                    </MenuItem>
+                    <MenuItem Header="透視投影">
+                        <MenuItem Header="透視投影1" Command="{Binding Perspective1Command}" IsEnabled="{Binding IsEnabled}"/>
+                        <MenuItem Header="透視投影2" Command="{Binding Perspective2Command}" IsEnabled="{Binding IsEnabled}"/>
+                        <MenuItem Header="透視投影3" Command="{Binding Perspective3Command}" IsEnabled="{Binding IsEnabled}"/>
+                    </MenuItem>
+                </MenuItem>
             </Menu>
-            <ContentControl prism:RegionManager.RegionName="ContentRegion" />
+            <ContentControl
+                Width="{Binding ContentWidth, Mode=TwoWay}"
+                Height="{Binding ContentHeight, Mode=TwoWay}"
+                prism:RegionManager.RegionName="ContentRegion" />
         </DockPanel>
     </Grid>
 </Window>
