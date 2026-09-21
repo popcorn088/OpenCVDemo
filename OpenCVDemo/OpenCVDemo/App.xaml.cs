@@ -22,6 +22,7 @@ namespace OpenCVDemo
             containerRegistry.RegisterSingleton<IOpenFileService, OpenFileService>();
             containerRegistry.RegisterSingleton<IImageService, ImageService>();
             containerRegistry.RegisterForNavigation<Image>();
+            containerRegistry.RegisterDialog<TextBox, TextBoxViewModel>();
         }
     }
 }

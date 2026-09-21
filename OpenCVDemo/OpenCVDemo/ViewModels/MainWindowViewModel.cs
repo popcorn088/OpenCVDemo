@@ -9,6 +9,8 @@ using OpenCVDemo.Views;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Prism.Services.Dialogs;
+using OpenCvSharp.XImgProc;
 
 namespace OpenCVDemo.ViewModels
 {
@@ -17,6 +19,7 @@ namespace OpenCVDemo.ViewModels
         private readonly IRegionManager _regionManager;
         private readonly IOpenFileService _openFileService;
         private readonly IImageService _imageService;
+        private readonly IDialogService _dialogService;
         public static string Title => "OpenCV Demo";
         public bool IsEnabled
         {
@@ -74,12 +77,20 @@ namespace OpenCVDemo.ViewModels
         public DelegateCommand Perspective1Command { get; }
         public DelegateCommand Perspective2Command { get; }
         public DelegateCommand Perspective3Command { get; }
-        public MainWindowViewModel(IRegionManager regionManager, IOpenFileService openFileService, IImageService imageService)
+        public DelegateCommand DetectConers1Command { get; }
+        public DelegateCommand DetectConers2Command { get; }
+        public DelegateCommand FindRectsCommand { get; }
+        public DelegateCommand RepairCommand { get; }
+        public DelegateCommand ThinCommand { get; }
+        public MainWindowViewModel(IRegionManager regionManager, IOpenFileService openFileService, IImageService imageService, IDialogService dialogService)
         {
             _regionManager = regionManager;
             _openFileService = openFileService;
             _imageService = imageService;
+            _dialogService = dialogService;
+
             _imageService.ImageChanged += ImageChangedHandler;
+
             FileOpenCommand = new DelegateCommand(FileOpenCommandExecute);
             UndoCommand = new DelegateCommand(UndoCommandExecute);
             
@@ -125,7 +136,130 @@ namespace OpenCVDemo.ViewModels
             Perspective2Command = new DelegateCommand(Perspective2CommandExecute);
             Perspective3Command = new DelegateCommand(Perspective3CommandExecute);
 
+            // 6章
+            DetectConers1Command = new DelegateCommand(DetectConers1CommandExecute);
+            DetectConers2Command = new DelegateCommand(DetectConers2CommandExecute);
+            FindRectsCommand = new DelegateCommand(FindRectsCommandExecute);
+            RepairCommand = new DelegateCommand(RepairCommandExecute);
+            ThinCommand = new DelegateCommand(ThinCommandExecute);
+
             _regionManager.RegisterViewWithRegion("ContentRegion", nameof(Image));
+        }
+
+        private void ThinCommandExecute()
+        {
+            var oMat = new Mat();
+            using var gray = new Mat();
+            Cv2.CvtColor(_imageService.Mat, gray, ColorConversionCodes.RGB2GRAY);
+            CvXImgProc.Thinning(gray, oMat, ThinningTypes.ZHANGSUEN);
+            _imageService.Mat = oMat;
+        }
+
+        private void RepairCommandExecute()
+        {
+            var oMat = new Mat();
+            using var gray = new Mat();
+            using var mask = new Mat();
+            Cv2.CvtColor(_imageService.Mat, gray, ColorConversionCodes.RGB2GRAY);
+            Cv2.EqualizeHist(gray, mask);
+            Cv2.Threshold(mask, mask, 253, 1, ThresholdTypes.Binary);
+            Cv2.Inpaint(_imageService.Mat, mask, oMat, 3, InpaintTypes.Telea);
+            _imageService.Mat = oMat;
+        }
+
+        private void FindRectsCommandExecute()
+        {
+            _dialogService.ShowDialog(nameof(TextBox), (result) =>
+            {
+                if (result.Result == ButtonResult.Cancel)
+                {
+                    return;
+                }
+
+                var inputText = result.Parameters.GetValue<string>("InputText");
+                char[] delimitter = { 'X', 'x' };
+                try
+                {
+                    var resolutions = inputText.Split(delimitter);
+                    var width = int.Parse(resolutions[0]);
+                    var height = int.Parse(resolutions[1]);
+                    FindRects(width, height, _imageService.Mat.Rows);
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show(ex.Message);
+                    return;
+                }
+            });
+        }
+
+        private void FindRects(int width, int height, int dispHeight)
+        {
+            int detects = 0;
+            var oMat = _imageService.Mat.Clone();
+
+            var gray = new Mat();
+            Cv2.CvtColor(_imageService.Mat, gray, ColorConversionCodes.RGB2GRAY);
+            Cv2.Threshold(gray, gray, 128, 255, ThresholdTypes.Binary);
+            Cv2.FindContours(gray, out Point[][] contours, out HierarchyIndex[] hierarchy, RetrievalModes.Tree, ContourApproximationModes.ApproxTC89L1);
+            for (int i = 0; i < contours.Length; i++)
+            {
+                Cv2.DrawContours(oMat, contours, i, Scalar.Green, 2);
+            }
+            for (int i = 0; i < contours.Length; i++)
+            {
+                double a = Cv2.ContourArea(contours[i], false);
+                if (a > width * height)
+                {
+                    Point[] approx;
+                    approx = Cv2.ApproxPolyDP(contours[i], 0.01 * Cv2.ArcLength(contours[i], true), true);
+                    if (approx.Length == 4)
+                    {
+                        detects++;
+                        Point[][] tmpoContours = new Point[][] { approx };
+                        int maxLevel = 0;
+                        Cv2.DrawContours(oMat, tmpoContours, 0, Scalar.Red, 2, LineTypes.AntiAlias, hierarchy, maxLevel);
+                    }
+                }
+            }
+            float scale = (float)dispHeight / (float)oMat.Height;
+            var dipDst = new Mat();
+            Cv2.Resize(oMat, dipDst, new Size(), scale, scale);
+            _imageService.Mat = dipDst;
+        }
+
+        private void DetectConers2CommandExecute()
+        {
+            var oMat = _imageService.Mat.Clone();
+            var grayMat = new Mat();
+
+            Cv2.CvtColor(_imageService.Mat, grayMat, ColorConversionCodes.RGB2GRAY);
+            Cv2.Threshold(grayMat, grayMat, 128, 255, ThresholdTypes.Binary);
+
+            Cv2.FindContours(grayMat, out Point[][] contours, out HierarchyIndex[] hierarchies, RetrievalModes.Tree, ContourApproximationModes.ApproxSimple);
+            for (int i = 0; i < contours.Length; i++)
+            {
+                Cv2.DrawContours(oMat, contours, i, Scalar.Green, 2, LineTypes.Link8, hierarchies, 0);
+            }
+            _imageService.Mat = oMat;
+        }
+
+        private void DetectConers1CommandExecute()
+        {
+            var oMat = _imageService.Mat.Clone();
+            var grayMat = new Mat();
+
+            Cv2.CvtColor(_imageService.Mat, grayMat, ColorConversionCodes.BGR2GRAY);
+
+            const int maxCorners = 50, blockSize = 3;
+            const double qualityLevel = 0.01, minDistance = 20.0, k = 0.04;
+            const bool useHarrisDetector = false;
+            Point2f[] corners = Cv2.GoodFeaturesToTrack(grayMat, maxCorners, qualityLevel, minDistance, new Mat(), blockSize, useHarrisDetector, k);
+            foreach (Point2f it in corners)
+            {
+                Cv2.Circle(oMat, (Point)it, 4, Scalar.Blue, 2);
+            }
+            _imageService.Mat = oMat;
         }
 
         private void Perspective3CommandExecute()
