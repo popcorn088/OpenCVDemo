@@ -11,6 +11,10 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Prism.Services.Dialogs;
 using OpenCvSharp.XImgProc;
+using I = System.Windows.Input;
+using W = System.Windows;
+using System.Windows.Media.Media3D;
+using OpenCVDemo.Managers;
 
 namespace OpenCVDemo.ViewModels
 {
@@ -82,6 +86,9 @@ namespace OpenCVDemo.ViewModels
         public DelegateCommand FindRectsCommand { get; }
         public DelegateCommand RepairCommand { get; }
         public DelegateCommand ThinCommand { get; }
+        public DelegateCommand<I.MouseButtonEventArgs> MouseLeftButtonDownCommand { get; }
+        PersObjManeger persObjManager;
+
         public MainWindowViewModel(IRegionManager regionManager, IOpenFileService openFileService, IImageService imageService, IDialogService dialogService)
         {
             _regionManager = regionManager;
@@ -143,7 +150,21 @@ namespace OpenCVDemo.ViewModels
             RepairCommand = new DelegateCommand(RepairCommandExecute);
             ThinCommand = new DelegateCommand(ThinCommandExecute);
 
+            // 7章
+            persObjManager = new PersObjManeger();
+            MouseLeftButtonDownCommand = new DelegateCommand<I.MouseButtonEventArgs>(MouseLeftButtonDownCommandExecute);
+
             _regionManager.RegisterViewWithRegion("ContentRegion", nameof(Image));
+        }
+
+        private void MouseLeftButtonDownCommandExecute(I.MouseButtonEventArgs args)
+        {
+            var oMat = persObjManager.MouseLeftButtonDownCommandExecute( args);
+            _imageService.Mat = oMat;
+            if (persObjManager.MousePointsCount == 0)
+            {
+                persObjManager.SourceMat = _imageService.Mat.Clone();
+            }
         }
 
         private void ThinCommandExecute()
@@ -739,6 +760,7 @@ namespace OpenCVDemo.ViewModels
         private void UndoCommandExecute()
         {
             _imageService.Mat = _imageService.LastMat.Clone();
+            persObjManager.SourceMat = _imageService.Mat.Clone();
         }
 
         private void FileOpenCommandExecute()
@@ -751,6 +773,7 @@ namespace OpenCVDemo.ViewModels
             _imageService.Mat = new Mat(_openFileService.FileName);
             ContentWidth = _imageService.Mat.Width;
             ContentHeight = _imageService.Mat.Height;
+            persObjManager.SourceMat = _imageService.Mat.Clone();
         }
     }
 }

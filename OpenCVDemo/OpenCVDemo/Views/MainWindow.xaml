@@ -76,7 +76,14 @@
             <ContentControl
                 Width="{Binding ContentWidth, Mode=TwoWay}"
                 Height="{Binding ContentHeight, Mode=TwoWay}"
-                prism:RegionManager.RegionName="ContentRegion" />
+                prism:RegionManager.RegionName="ContentRegion"
+                IsEnabled="{Binding IsEnabled}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseLeftButtonDown">
+                        <prism:InvokeCommandAction Command="{Binding MouseLeftButtonDownCommand}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </ContentControl>
         </DockPanel>
     </Grid>
 </Window>
