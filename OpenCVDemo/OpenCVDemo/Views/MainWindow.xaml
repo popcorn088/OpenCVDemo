@@ -63,6 +63,7 @@
                         <MenuItem Header="透視投影1" Command="{Binding Perspective1Command}" IsEnabled="{Binding IsEnabled}"/>
                         <MenuItem Header="透視投影2" Command="{Binding Perspective2Command}" IsEnabled="{Binding IsEnabled}"/>
                         <MenuItem Header="透視投影3" Command="{Binding Perspective3Command}" IsEnabled="{Binding IsEnabled}"/>
+                        <MenuItem Header="指定四角形" Command="{Binding PerspectiveRectangleCommand}" IsEnabled="{Binding IsEnabled}"/>
                     </MenuItem>
                 </MenuItem>
                 <MenuItem Header="検出">
@@ -72,6 +73,7 @@
                 </MenuItem>
                 <MenuItem Header="ノイズ除去" Command="{Binding RepairCommand}" IsEnabled="{Binding IsEnabled}"/>
                 <MenuItem Header="細線化" Command="{Binding ThinCommand}" IsEnabled="{Binding IsEnabled}"/>
+                <MenuItem Header="オブジェクト除去" Command="{Binding RemoveObjectCommand}" IsEnabled="{Binding IsEnabled}"/>
             </Menu>
             <ContentControl
                 Width="{Binding ContentWidth, Mode=TwoWay}"

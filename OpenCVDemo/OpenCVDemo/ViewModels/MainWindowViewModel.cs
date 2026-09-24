@@ -20,6 +20,12 @@ namespace OpenCVDemo.ViewModels
 {
     public class MainWindowViewModel : BindableBase
     {
+        public enum MouseDownModes
+        {
+            PerspectiveRectangle,
+            RemoveObject,
+            None,
+        }
         private readonly IRegionManager _regionManager;
         private readonly IOpenFileService _openFileService;
         private readonly IImageService _imageService;
@@ -45,6 +51,7 @@ namespace OpenCVDemo.ViewModels
             get => _contentHeight;
             set => SetProperty(ref _contentHeight, value);
         }
+        private MouseDownModes mode { get; set; } = MouseDownModes.None;
         public DelegateCommand FileOpenCommand { get; }
         public DelegateCommand UndoCommand { get; }
         public DelegateCommand NegativeCommand { get; }
@@ -86,8 +93,11 @@ namespace OpenCVDemo.ViewModels
         public DelegateCommand FindRectsCommand { get; }
         public DelegateCommand RepairCommand { get; }
         public DelegateCommand ThinCommand { get; }
+        public DelegateCommand PerspectiveRectangleCommand { get; }
         public DelegateCommand<I.MouseButtonEventArgs> MouseLeftButtonDownCommand { get; }
+        public DelegateCommand RemoveObjectCommand { get; }
         PersObjManeger persObjManager;
+        RemoveObjManeger removeObjMaanager;
 
         public MainWindowViewModel(IRegionManager regionManager, IOpenFileService openFileService, IImageService imageService, IDialogService dialogService)
         {
@@ -152,18 +162,44 @@ namespace OpenCVDemo.ViewModels
 
             // 7章
             persObjManager = new PersObjManeger();
+            removeObjMaanager = new RemoveObjManeger();
+            PerspectiveRectangleCommand = new DelegateCommand(PerspectiveRectangleCommandExecute);
             MouseLeftButtonDownCommand = new DelegateCommand<I.MouseButtonEventArgs>(MouseLeftButtonDownCommandExecute);
+            RemoveObjectCommand = new DelegateCommand(RemoveObjectCommandExecute);
 
             _regionManager.RegisterViewWithRegion("ContentRegion", nameof(Image));
         }
 
+        private void RemoveObjectCommandExecute()
+        {
+            mode = MouseDownModes.RemoveObject;
+        }
+
+        private void PerspectiveRectangleCommandExecute()
+        {
+            mode = MouseDownModes.PerspectiveRectangle;
+        }
+
         private void MouseLeftButtonDownCommandExecute(I.MouseButtonEventArgs args)
         {
-            var oMat = persObjManager.MouseLeftButtonDownCommandExecute( args);
-            _imageService.Mat = oMat;
-            if (persObjManager.MousePointsCount == 0)
+            if (mode == MouseDownModes.PerspectiveRectangle)
             {
-                persObjManager.SourceMat = _imageService.Mat.Clone();
+                var oMat = persObjManager.MouseLeftButtonDownCommandExecute(args);
+                _imageService.Mat = oMat;
+                if (persObjManager.MousePointsCount == 0)
+                {
+                    persObjManager.SourceMat = _imageService.Mat.Clone();
+                    mode = MouseDownModes.None;
+                }
+            }
+            else if (mode == MouseDownModes.RemoveObject)
+            {
+                var oMat = removeObjMaanager.MouseLeftButtonDownCommandExecute(args);
+                _imageService.Mat = oMat;
+            }
+            else
+            {
+                mode = MouseDownModes.None;
             }
         }
 
@@ -774,6 +810,7 @@ namespace OpenCVDemo.ViewModels
             ContentWidth = _imageService.Mat.Width;
             ContentHeight = _imageService.Mat.Height;
             persObjManager.SourceMat = _imageService.Mat.Clone();
+            removeObjMaanager.SourceMat = _imageService.Mat.Clone();
         }
     }
 }
