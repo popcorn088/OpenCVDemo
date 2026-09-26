@@ -24,6 +24,7 @@ namespace OpenCVDemo.ViewModels
         {
             PerspectiveRectangle,
             RemoveObject,
+            SizeChanged,
             None,
         }
         private readonly IRegionManager _regionManager;
@@ -94,11 +95,11 @@ namespace OpenCVDemo.ViewModels
         public DelegateCommand RepairCommand { get; }
         public DelegateCommand ThinCommand { get; }
         public DelegateCommand PerspectiveRectangleCommand { get; }
+        PersObjManeger persObjManager;
         public DelegateCommand<I.MouseButtonEventArgs> MouseLeftButtonDownCommand { get; }
         public DelegateCommand RemoveObjectCommand { get; }
-        PersObjManeger persObjManager;
         RemoveObjManeger removeObjMaanager;
-
+        public DelegateCommand SizeChangedCommand { get; }
         public MainWindowViewModel(IRegionManager regionManager, IOpenFileService openFileService, IImageService imageService, IDialogService dialogService)
         {
             _regionManager = regionManager;
@@ -166,8 +167,14 @@ namespace OpenCVDemo.ViewModels
             PerspectiveRectangleCommand = new DelegateCommand(PerspectiveRectangleCommandExecute);
             MouseLeftButtonDownCommand = new DelegateCommand<I.MouseButtonEventArgs>(MouseLeftButtonDownCommandExecute);
             RemoveObjectCommand = new DelegateCommand(RemoveObjectCommandExecute);
+            SizeChangedCommand = new DelegateCommand(SizeChanagedCommandExecute);
 
             _regionManager.RegisterViewWithRegion("ContentRegion", nameof(Image));
+        }
+
+        private void SizeChanagedCommandExecute()
+        {
+            mode = MouseDownModes.SizeChanged;
         }
 
         private void RemoveObjectCommandExecute()
@@ -196,11 +203,50 @@ namespace OpenCVDemo.ViewModels
             {
                 var oMat = removeObjMaanager.MouseLeftButtonDownCommandExecute(args);
                 _imageService.Mat = oMat;
+                if (removeObjMaanager.GetPoints().Count == 0)
+                {
+                    removeObjMaanager.SourceMat = _imageService.Mat.Clone();
+                    mode = MouseDownModes.None;
+                }
+            }
+            else if (mode == MouseDownModes.SizeChanged)
+            {
+                _dialogService.ShowDialog(nameof(TextBox), (result) =>
+                {
+                    if (result.Result == ButtonResult.Cancel)
+                    {
+                        return;
+                    }
+
+                    try
+                    {
+                        var inputText = result.Parameters.GetValue<string>("InputText");
+                        var scale = double.Parse(inputText);
+                        if (scale > 1.0)
+                        {
+
+                        }
+                        else if (scale < 1.0)
+                        {
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Windows.MessageBox.Show(ex.Message);
+                        return;
+                    }
+                });
             }
             else
             {
                 mode = MouseDownModes.None;
             }
+        }
+
+        private void ScaleUpImage(double scale)
+        {
+
         }
 
         private void ThinCommandExecute()
@@ -807,10 +853,10 @@ namespace OpenCVDemo.ViewModels
             }
 
             _imageService.Mat = new Mat(_openFileService.FileName);
+            removeObjMaanager.SourceMat = _imageService.Mat.Clone();
+            persObjManager.SourceMat = _imageService.Mat.Clone();
             ContentWidth = _imageService.Mat.Width;
             ContentHeight = _imageService.Mat.Height;
-            persObjManager.SourceMat = _imageService.Mat.Clone();
-            removeObjMaanager.SourceMat = _imageService.Mat.Clone();
         }
     }
 }

@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace OpenCVDemo.Managers
 {
-    public class RemoveObjManeger
+    public class RemoveObjManeger : MouseDownObjectManger
     {
-        List<Point> mouseDownPoints = new();
         private Mat sourceMat = new Mat();
         public Mat SourceMat
         {
@@ -23,18 +22,10 @@ namespace OpenCVDemo.Managers
         Mat pointMat;
         public Mat MouseLeftButtonDownCommandExecute(System.Windows.Input.MouseButtonEventArgs args)
         {
-            if (args.Source is not System.Windows.IInputElement)
-            {
-                return SourceMat.Clone();
-            }
-
-            var element = args.Source as System.Windows.IInputElement;
-            var point = args.GetPosition(element);
-            var cv2Point = new Point(point.X, point.Y);
-            Cv2.Circle(pointMat, cv2Point, 3, Scalar.Red, -1);
+            pointMat = base.MouseDownCommandExecute(pointMat, args);
+            var mouseDownPoints = base.GetPoints();
             if (mouseDownPoints.Count != 2)
             {
-                mouseDownPoints.Add(cv2Point);
                 return pointMat.Clone();
             }
             else
@@ -47,7 +38,7 @@ namespace OpenCVDemo.Managers
                 var oMat = new Mat();
                 Cv2.Inpaint(SourceMat, mask, oMat, 1, InpaintTypes.Telea);
 
-                mouseDownPoints.Clear();
+                base.Clear();
                 return oMat.Clone();
             }
         }

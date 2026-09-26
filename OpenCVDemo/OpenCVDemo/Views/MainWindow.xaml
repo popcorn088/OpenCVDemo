@@ -73,7 +73,10 @@
                 </MenuItem>
                 <MenuItem Header="ノイズ除去" Command="{Binding RepairCommand}" IsEnabled="{Binding IsEnabled}"/>
                 <MenuItem Header="細線化" Command="{Binding ThinCommand}" IsEnabled="{Binding IsEnabled}"/>
-                <MenuItem Header="オブジェクト除去" Command="{Binding RemoveObjectCommand}" IsEnabled="{Binding IsEnabled}"/>
+                <MenuItem Header="オブジェクト操作">
+                    <MenuItem Header="除去" Command="{Binding RemoveObjectCommand}" IsEnabled="{Binding IsEnabled}"/>
+                    <MenuItem Header="サイズ変更" Command="{Binding SizeChnagedCommand}" IsEnabled="{Binding IsEnabled}"/>
+                </MenuItem>
             </Menu>
             <ContentControl
                 Width="{Binding ContentWidth, Mode=TwoWay}"
